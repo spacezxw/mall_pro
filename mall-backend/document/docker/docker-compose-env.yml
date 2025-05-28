@@ -1,0 +1,99 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/mysql/data:/var/lib/mysql
+      - E:/Desktop/mall-dev-v3/data/mysql/conf:/etc/mysql
+      - E:/Desktop/mall-dev-v3/data/mysql/log:/var/log/mysql
+  redis:
+    image: redis:7
+    container_name: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/redis/data:/data
+    ports:
+      - "6379:6379"
+  nginx:
+    image: nginx:1.22
+    container_name: nginx
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/nginx/conf:/etc/nginx
+      - E:/Desktop/mall-dev-v3/data/nginx/html:/usr/share/nginx/html
+      - E:/Desktop/mall-dev-v3/data/nginx/logs:/var/log/nginx
+    ports:
+      - "80:80"
+  rabbitmq:
+    image: rabbitmq:3.9.11-management
+    container_name: rabbitmq
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/rabbitmq/data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  elasticsearch:
+    image: elasticsearch:7.17.3
+    container_name: elasticsearch
+    environment:
+      - "cluster.name=elasticsearch"
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1024m"
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/elasticsearch/plugins:/usr/share/elasticsearch/plugins
+      - E:/Desktop/mall-dev-v3/data/elasticsearch/data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  logstash:
+    image: logstash:7.17.3
+    container_name: logstash
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+    links:
+      - elasticsearch:es
+    ports:
+      - "4560:4560"
+      - "4561:4561"
+      - "4562:4562"
+      - "4563:4563"
+  kibana:
+    image: kibana:7.17.3
+    container_name: kibana
+    links:
+      - elasticsearch:es
+    depends_on:
+      - elasticsearch
+    environment:
+      - "elasticsearch.hosts=http://es:9200"
+    ports:
+      - "5601:5601"
+  mongo:
+    image: mongo:4
+    container_name: mongo
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/mongo/db:/data/db
+    ports:
+      - "27017:27017"
+  minio:
+    image: minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    volumes:
+      - E:/Desktop/mall-dev-v3/data/minio/data:/data
+    environment:
+      - "MINIO_ROOT_USER=minioadmin"
+      - "MINIO_ROOT_PASSWORD=minioadmin"
+    ports:
+      - "9090:9000"
+      - "9001:9001"
