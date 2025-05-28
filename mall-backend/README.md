@@ -133,7 +133,3 @@ mall
 | Kibana        | 7.17.3 | https://www.elastic.co/cn/downloads/kibana                   |
 
 
-
-[Apache License 2.0](https://github.com/macrozheng/mall/blob/master/LICENSE)
-
-Copyright (c) 2018-2024 macrozheng
